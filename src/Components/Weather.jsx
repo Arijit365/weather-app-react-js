@@ -13,7 +13,6 @@ import wind_icon from '../assets/wind.png';
 export default function Weather({props}) {
 
   const inputRef = useRef();
-  
 
   const allIcons = {
     "50d" : drizzle_icon,
@@ -27,6 +26,10 @@ export default function Weather({props}) {
   const [weatherData , setWeatherData] = useState(false);
 
   const search = async(city)=>{
+    if(city === ""){
+      alert("Enter the city name");
+      return;
+    }
     try {
       const url = `https://open-weather13.p.rapidapi.com/city/${city}/EN`;
 const options = {
@@ -41,6 +44,12 @@ try {
 	const response = await fetch(url, options);
 	const result = await response.json();
 	console.log(result);
+
+  if(!response.ok){
+    alert(result.meassage);
+    return;
+  }
+
   const icon = allIcons[result.weather.icon] || clear_icon;
   setWeatherData({
     humidity : result.main.humidity,
@@ -53,7 +62,8 @@ try {
 	console.error(error);
 }
     } catch (error) {
-      
+      setWeatherData(false);
+      console.error("Error in fetching weather data");
     }
   }
 
@@ -64,10 +74,12 @@ search("New York")
   return (
     <div className='weather'>
 <div className='search-bar'>
-    <input type='text' placeholder='Search'/>
-    <img src={search_icon} alt=""  />
+    <input type='text' placeholder='Search' ref={inputRef}/>
+    <img src={search_icon} alt="" onClick={() => search(inputRef.current.value)} />
 </div>
-<img src={weatherData.icon} alt="" className='weather-icon' />
+
+{weatherData?<>
+  <img src={weatherData.icon} alt="" className='weather-icon' />
 <p className='temperature'> {weatherData.temp} &deg; C </p>
 <p className='location'>  {weatherData.city} </p>
 <div className='weather-data'>
@@ -86,6 +98,8 @@ search("New York")
     </div>
   </div>
 </div>
+</>:<></>}
+
     </div>
   )
 }
